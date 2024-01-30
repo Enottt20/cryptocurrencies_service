@@ -1,7 +1,6 @@
-from api.v1.binance_api import run_binance_subscription
+from api.v1.coingeko_api import start_coingeko_service
 from typing import List
 from schemas import ExchangeData, Course
-import json
 
 
 # # setup logging
@@ -19,16 +18,16 @@ import json
 #     f'{cfg.json()}'
 # )
 #
-# message_producer = broker.MessageProducer(
-#     dsn=cfg.RABBITMQ_DSN.unicode_string(),
-#     exchange_name=cfg.EXCHANGE_NAME,
-#     queue_name='notification apartment rental',
-# )
+message_producer = broker.MessageProducer(
+    dsn=cfg.RABBITMQ_DSN.unicode_string(),
+    exchange_name=cfg.EXCHANGE_NAME,
+    queue_name='notification apartment rental',
+)
 
 
 def transform_data(input_data: List[Course], exchange_name):
     exchange_data = ExchangeData(exchanger=exchange_name, courses=[item for item in input_data])
-    return json.dumps(exchange_data.dict(), indent=2)
+    return exchange_data
 
 
 def fix_usdt(course):
@@ -41,12 +40,12 @@ def format_currency_pair(course):
     return course
 
 
-def convert_currencies_to_rub(input_data: List[Course], rub_to_usdt):
+def convert_currencies_to_rub(input_data: List[Course], rub_to_usdt) -> List[Course]:
     result_data = []
 
     for item in input_data:
         item = Course(**item)
-        if 'USDT' in item.direction:
+        if 'USDT' in item.direction and not 'USDTRUB' in item.direction:
             direction = item.direction.replace('USDT', 'RUB')
             value_in_rub = float(item.value) * rub_to_usdt
             result_data.append(format_currency_pair(fix_usdt(Course(direction=direction, value=value_in_rub))))

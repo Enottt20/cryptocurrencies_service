@@ -59,5 +59,6 @@ def callback_function(data):
         print("Callback function received data:", data)
 
 
-if __name__ == "__main__":
-    asyncio.run(fetch_and_send(callback=callback_function))
+def start_coingeko_service(callback):
+    asyncio.run(fetch_and_send(callback=callback))
+
