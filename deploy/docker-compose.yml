@@ -33,7 +33,10 @@ services:
       RABBITMQ_DSN: $RABBITMQ_DSN
       QUEUE_COINGEKO_NAME: $QUEUE_COINGEKO_NAME
       QUEUE_BINANCE_NAME: $QUEUE_BINANCE_NAME
-      EXCHANGE_NAME: $EXCHANGE_NAME
+      REDIS_URL: $REDIS_URL
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   
   binance_service:
@@ -45,6 +48,8 @@ services:
     environment:
       RABBITMQ_DSN: $RABBITMQ_DSN
       QUEUE_BINANCE_NAME: $QUEUE_BINANCE_NAME
+    depends_on:
+      - courses_service
 
 
   coingeko_service:
@@ -56,6 +61,8 @@ services:
     environment:
       RABBITMQ_DSN: $RABBITMQ_DSN
       QUEUE_COINGEKO_NAME: $QUEUE_COINGEKO_NAME
+    depends_on:
+      - courses_service
     
 volumes:
   redis_data:

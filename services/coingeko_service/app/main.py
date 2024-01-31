@@ -7,6 +7,10 @@ from broker.producer import MessageProducer
 
 # setup logging
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=2,
+    format="%(levelname)-9s %(message)s"
+)
 
 #load config
 cfg: config.Config = config.load_config()

@@ -22,6 +22,12 @@ class Config(BaseSettings):
         alias='QUEUE_COINGEKO_NAME'
     )
 
+    REDIS_URL: str = Field(
+        default='redis://redis:6379',
+        env='REDIS_URL',
+        alias='REDIS_URL'
+    )
+
 
     class Config:
         env_file = ".env"  # Указываем имя файла .env

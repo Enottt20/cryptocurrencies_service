@@ -6,11 +6,10 @@ from fastapi import FastAPI
 import broker
 import config
 import schemas
-from app.api.v1.api import api_router
+from app.api.v1.api import api_router_v1
 from app.api.v1.crud import update_courses
 from contextlib import asynccontextmanager
 from app.api.deps import connect_to_redis
-
 
 # setup logging
 logger = logging.getLogger(__name__)
@@ -19,14 +18,15 @@ logging.basicConfig(
     format="%(levelname)-9s %(message)s"
 )
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     asyncio.create_task(consumer_coingeko_service())
     asyncio.create_task(consumer_binance_service())
     yield
 
-app = FastAPI(lifespan=lifespan)
 
+app = FastAPI(lifespan=lifespan)
 
 # load config
 cfg: config.Config = config.load_config()
@@ -65,10 +65,7 @@ async def receiving_data_coingeko_service(data):
     await update_courses(data, redis)
 
 
-
-app.include_router(api_router, prefix='/api/v1')
-
+app.include_router(api_router_v1, prefix='/api/v1')
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5002, log_level="info")
-
