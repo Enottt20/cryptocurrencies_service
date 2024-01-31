@@ -8,7 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./app /src/app
 
-# Добавляем src в PYTHONPATH
 ENV PYTHONPATH "${PYTHONPATH}:/src"
 
 CMD ["python3", "app/main.py"]
