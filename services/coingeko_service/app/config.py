@@ -3,23 +3,16 @@ from pydantic import Field, Extra, AmqpDsn
 
 
 class Config(BaseSettings):
-
     RABBITMQ_DSN: AmqpDsn = Field(
         default='amqp://guest:guest@localhost//',
         env='RABBITMQ_DSN',
         alias='RABBITMQ_DSN'
     )
 
-    QUEUE_RESERVATION_NAME: str = Field(
-        default='notification apartment rental',
-        env='QUEUE_RESERVATION_NAME',
-        alias='QUEUE_RESERVATION_NAME'
-    )
-
-    QUEUE_REVIEW_NAME: str = Field(
-        default='notification publish review',
-        env='QUEUE_REVIEW_NAME',
-        alias='QUEUE_REVIEW_NAME'
+    QUEUE_COINGEKO_NAME: str = Field(
+        default='notification coingeko',
+        env='QUEUE_COINGEKO_NAME',
+        alias='QUEUE_COINGEKO_NAME'
     )
 
 
@@ -30,4 +23,3 @@ class Config(BaseSettings):
 # Создаем экземпляр конфигурации
 def load_config() -> Config:
     return Config()
-

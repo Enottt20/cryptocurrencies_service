@@ -20,12 +20,12 @@ class BinanceWebSocketClient:
 
             # Преобразование времени из timestamp в строку
             time_str = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-
             candle_data = {
                 'direction': ticker,
                 #'time': time_str,
                 'value': close_price
             }
+            print(candle_data)
 
             self.candle_datas.append(candle_data)
 
@@ -80,7 +80,7 @@ async def run_binance_websocket(client: BinanceWebSocketClient):
 
 async def send_data(client: BinanceWebSocketClient, callback):
     while True:
-        callback(client.candle_datas)
+        await callback(client.candle_datas)
         await asyncio.sleep(1)
 
 def run_binance_subscription(subscription_params, callback):
@@ -89,7 +89,7 @@ def run_binance_subscription(subscription_params, callback):
 
     tasks = [
         loop.create_task(run_binance_websocket(client)),
-        loop.create_task(send_data(client, callback))
+        loop.create_task(send_data(client, callback)),
     ]
 
     loop.run_until_complete(asyncio.gather(*tasks))

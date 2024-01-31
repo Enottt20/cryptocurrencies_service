@@ -1,5 +1,8 @@
 import asyncio
+import json
+
 import httpx
+from app.schemas import Course, ExchangeData
 
 
 async def get_price(crypto, currency):
@@ -17,14 +20,47 @@ async def get_price(crypto, currency):
 
 async def send_data(data, callback=None):
     if data is not None:
-        print("Received data:")
+        print("Получены данные:")
+        exchange_data = []
+
         for crypto, currencies in data.items():
             for currency, value in currencies.items():
-                print(f'{crypto.upper()}-to-{currency.upper()}: {value}')
+                # Проверяем, что значение является числом
+                if isinstance(value, (int, float)):
+                    # Преобразуем направления валютных пар
+                    if crypto.lower() == 'tether':
+                        crypto_abbr = 'USDT'
+                    elif crypto.lower() == 'ethereum':
+                        crypto_abbr = 'ETH'
+                    elif crypto.lower() == 'bitcoin':
+                        crypto_abbr = 'BTC'
+                    else:
+                        crypto_abbr = crypto.upper()
+
+                    if currency.lower() == 'rub':
+                        currency_abbr = 'RUB'
+                    elif currency.lower() == 'usd':
+                        currency_abbr = 'USD'
+                    else:
+                        currency_abbr = currency.upper()
+
+                    direction = f"{crypto_abbr}-{currency_abbr}"
+                    course = Course(direction=direction, value=value)
+                    exchange_data.append(course)
+
+                    print(f'{direction}: {value}')
+                else:
+                    print(f"Ошибка: Неверное значение для {crypto}-{currency}")
+
         print()
 
+        # Создаем объект ExchangeData, содержащий информацию об обмене
+        exchange_data_object = ExchangeData(exchanger="Coingeko", courses=exchange_data)
+
         if callback is not None:
-            callback(data)
+            # Вызываем функцию обратного вызова с данными в формате ExchangeData
+            await callback(json.dumps(exchange_data_object.dict(), indent=2))
+
 
 
 async def fetch_and_send(callback=None):
@@ -52,11 +88,6 @@ async def fetch_and_send(callback=None):
         await send_data(data, callback)
         await asyncio.sleep(5)
 
-
-def callback_function(data):
-    # Your logic to handle incoming data
-    if data is not None:
-        print("Callback function received data:", data)
 
 
 def start_coingeko_service(callback):

@@ -1,0 +1,39 @@
+version: "2.0"
+
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"  # Порт для AMQP
+      - "15672:15672"  # Порт для веб-интерфейса
+    environment:
+      RABBITMQ_DEFAULT_USER: $RABBITMQ_DEFAULT_USER
+      RABBITMQ_DEFAULT_PASS: $RABBITMQ_DEFAULT_PASS
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    
+
+  courses_service:
+    build:
+      context: ../services/courses_service
+      dockerfile: ./Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      RABBITMQ_DSN: $RABBITMQ_DSN
+      QUEUE_COINGEKO_NAME: $QUEUE_COINGEKO_NAME
+      QUEUE_BINANCE_NAME: $QUEUE_BINANCE_NAME
+      EXCHANGE_NAME: $EXCHANGE_NAME
+    
+volumes:
+  redis_data:
