@@ -1,5 +1,9 @@
+import logging
+
 import aio_pika
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(name)s: %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z')
+logger = logging.getLogger(__name__)
 
 class MessageProducer():
     def __init__(self, dsn, queue_name="notification", exchange_name="notification"):

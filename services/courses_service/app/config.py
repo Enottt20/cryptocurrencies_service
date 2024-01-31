@@ -23,7 +23,7 @@ class Config(BaseSettings):
     )
 
     REDIS_URL: str = Field(
-        default='redis://redis:6379',
+        default='redis://localhost:6379',
         env='REDIS_URL',
         alias='REDIS_URL'
     )

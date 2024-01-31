@@ -15,6 +15,12 @@ class Config(BaseSettings):
         alias='QUEUE_COINGEKO_NAME'
     )
 
+    COURSES_UPDATE_DELAY: int = Field(
+        default=10,
+        env='COURSES_UPDATE_DELAY',
+        alias='COURSES_UPDATE_DELAY'
+    )
+
 
     class Config:
         env_file = ".env"  # Указываем имя файла .env

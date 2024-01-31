@@ -1,8 +1,13 @@
 import asyncio
 import json
-
+import logging
 import httpx
 from app.schemas import Course, ExchangeData
+from app import config
+
+cfg: config.Config = config.load_config()
+
+logger = logging.getLogger(__name__)
 
 
 async def get_price(crypto, currency):
@@ -14,53 +19,65 @@ async def get_price(crypto, currency):
         if crypto in data and currency in data[crypto]:
             return data[crypto][currency]
         else:
-            print(f"Error: Invalid response for {crypto}-to-{currency}")
+            logger.error(f"Error: Invalid response for {crypto}-to-{currency}")
             return None
 
 
 async def send_data(data, callback=None):
     if data is not None:
-        print("Получены данные:")
-        exchange_data = []
-
-        for crypto, currencies in data.items():
-            for currency, value in currencies.items():
-                # Проверяем, что значение является числом
-                if isinstance(value, (int, float)):
-                    # Преобразуем направления валютных пар
-                    if crypto.lower() == 'tether':
-                        crypto_abbr = 'USDT'
-                    elif crypto.lower() == 'ethereum':
-                        crypto_abbr = 'ETH'
-                    elif crypto.lower() == 'bitcoin':
-                        crypto_abbr = 'BTC'
-                    else:
-                        crypto_abbr = crypto.upper()
-
-                    if currency.lower() == 'rub':
-                        currency_abbr = 'RUB'
-                    elif currency.lower() == 'usd':
-                        currency_abbr = 'USD'
-                    else:
-                        currency_abbr = currency.upper()
-
-                    direction = f"{crypto_abbr}-{currency_abbr}"
-                    course = Course(direction=direction, value=value)
-                    exchange_data.append(course)
-
-                    print(f'{direction}: {value}')
-                else:
-                    print(f"Ошибка: Неверное значение для {crypto}-{currency}")
-
-        print()
-
-        # Создаем объект ExchangeData, содержащий информацию об обмене
-        exchange_data_object = ExchangeData(exchanger="Coingeko", courses=exchange_data)
+        exchange_data = create_exchange_data(data)
+        exchange_data_object = create_exchange_data_object(exchange_data)
 
         if callback is not None:
-            # Вызываем функцию обратного вызова с данными в формате ExchangeData
-            await callback(json.dumps(exchange_data_object.dict(), indent=2))
+            await invoke_callback(callback, exchange_data_object)
 
+
+def create_exchange_data(data):
+    exchange_data = []
+    for crypto, currencies in data.items():
+        for currency, value in currencies.items():
+            if isinstance(value, (int, float)):
+                crypto_abbr = map_crypto_abbr(crypto)
+                currency_abbr = map_currency_abbr(currency)
+                direction = f"{crypto_abbr}-{currency_abbr}"
+                course = Course(direction=direction, value=value)
+                exchange_data.append(course)
+                logger.info(f'{direction}: {value}')
+            else:
+                logger.error(f"Ошибка: Неверное значение для {crypto}-{currency}")
+    return exchange_data
+
+
+def create_exchange_data_object(exchange_data):
+    return ExchangeData(exchanger="Coingeko", courses=exchange_data)
+
+
+async def invoke_callback(callback, exchange_data_object):
+    await callback(json.dumps(exchange_data_object.dict(), indent=2))
+
+
+def map_crypto_abbr(crypto):
+    crypto_lower = crypto.lower()
+    match crypto_lower:
+        case 'tether':
+            return 'USDT'
+        case 'ethereum':
+            return 'ETH'
+        case 'bitcoin':
+            return 'BTC'
+        case _:
+            return crypto.upper()
+
+
+def map_currency_abbr(currency):
+    currency_lower = currency.lower()
+    match currency_lower:
+        case 'rub':
+            return 'RUB'
+        case 'usd':
+            return 'USD'
+        case _:
+            return currency.upper()
 
 
 async def fetch_and_send(callback=None):
@@ -86,7 +103,7 @@ async def fetch_and_send(callback=None):
             data[cryptos[i]] = crypto_data
 
         await send_data(data, callback)
-        await asyncio.sleep(5)
+        await asyncio.sleep(cfg.COURSES_UPDATE_DELAY)
 
 
 

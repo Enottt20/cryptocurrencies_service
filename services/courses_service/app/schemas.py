@@ -8,3 +8,4 @@ class Course(BaseModel):
 class ExchangeData(BaseModel):
     exchanger: str
     courses: List[Course]
+

@@ -11,5 +11,5 @@ router = APIRouter()
 
 
 @router.get("/courses/", status_code=200)
-async def read_courses(redis: Redis = Depends(connect_to_redis)) -> ExchangeData:
-    return await get_courses(redis)
+async def read_courses(currency_pair: Optional[str] = None, redis: Redis = Depends(connect_to_redis)) -> ExchangeData:
+    return await get_courses(redis, currency_pair)

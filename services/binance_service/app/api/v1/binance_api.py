@@ -1,7 +1,12 @@
 import asyncio
+import logging
 import websockets
 import json
 from datetime import datetime, timezone
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(name)s: %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z')
+logger = logging.getLogger(__name__)
+
 
 class BinanceWebSocketClient:
     def __init__(self, params):
@@ -18,22 +23,14 @@ class BinanceWebSocketClient:
             timestamp = candle['t']
             ticker = candle['s']
 
-            # Преобразование времени из timestamp в строку
             time_str = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
             candle_data = {
                 'direction': ticker,
                 #'time': time_str,
                 'value': close_price
             }
-            print(candle_data)
 
             self.candle_datas.append(candle_data)
-
-    async def on_error(self, error):
-        print(f'WebSocket Error: {error}')
-
-    async def on_close(self, close_status_code, close_msg):
-        print(f'WebSocket Closed. Code: {close_status_code}, Message: {close_msg}')
 
     async def on_open(self, ws):
         payload = {
@@ -53,8 +50,8 @@ class BinanceWebSocketClient:
                         while True:
                             message = await ws.recv()
                             await self.on_message(message)
-                    except websockets.exceptions.ConnectionClosed:
-                        pass  # Connection was closed, handle it as needed
+                    except websockets.exceptions.ConnectionClosed as e:
+                        logger.error(e)
 
                 receive_task = asyncio.create_task(receive_forever())
 
@@ -72,16 +69,15 @@ class BinanceWebSocketClient:
         return self.candle_datas
 
 
-
-
-
 async def run_binance_websocket(client: BinanceWebSocketClient):
     await client.connect()
+
 
 async def send_data(client: BinanceWebSocketClient, callback):
     while True:
         await callback(client.candle_datas)
         await asyncio.sleep(1)
+
 
 def run_binance_subscription(subscription_params, callback):
     client = BinanceWebSocketClient(subscription_params)

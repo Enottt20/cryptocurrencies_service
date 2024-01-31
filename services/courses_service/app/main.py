@@ -12,11 +12,8 @@ from contextlib import asynccontextmanager
 from app.api.deps import connect_to_redis
 
 # setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(name)s: %(message)s', datefmt='%Y-%m-%dT%H:%M:%S%z')
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)-9s %(message)s"
-)
 
 
 @asynccontextmanager
