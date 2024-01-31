@@ -44,9 +44,7 @@ services:
       - "5003:5003"
     environment:
       RABBITMQ_DSN: $RABBITMQ_DSN
-      QUEUE_COINGEKO_NAME: $QUEUE_COINGEKO_NAME
       QUEUE_BINANCE_NAME: $QUEUE_BINANCE_NAME
-      EXCHANGE_NAME: $EXCHANGE_NAME
 
 
   coingeko_service:
@@ -54,12 +52,10 @@ services:
       context: ../services/coingeko_service
       dockerfile: ./Dockerfile
     ports:
-      - "5003:5003"
+      - "5004:5004"
     environment:
       RABBITMQ_DSN: $RABBITMQ_DSN
       QUEUE_COINGEKO_NAME: $QUEUE_COINGEKO_NAME
-      QUEUE_BINANCE_NAME: $QUEUE_BINANCE_NAME
-      EXCHANGE_NAME: $EXCHANGE_NAME
     
 volumes:
   redis_data:
