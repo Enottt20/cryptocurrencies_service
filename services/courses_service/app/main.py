@@ -54,6 +54,10 @@ async def receiving_data_binance_service(data):
     redis = await connect_to_redis()
     await update_courses(data, redis)
 
+@app.get("/hi", status_code=200)
+async def hi():
+    return {'hi'}
+
 
 async def receiving_data_coingeko_service(data):
     data = json.loads(data)
